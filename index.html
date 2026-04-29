@@ -1,1297 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cloud Vault 2</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root{
-  --bg:#060610;
-  --s1:#0c0c1e;
-  --s2:#12122a;
-  --s3:#1a1a36;
-  --card:#16163000;
-  --border:rgba(120,100,255,0.15);
-  --border2:rgba(120,100,255,0.08);
-  --p:#8b5cf6;
-  --p2:#a78bfa;
-  --pk:#ec4899;
-  --cyan:#06b6d4;
-  --green:#10b981;
-  --text:#f8f8ff;
-  --muted:#7070a0;
-  --glass:rgba(255,255,255,0.03);
-  --glow:rgba(139,92,246,0.4);
-}
-
-html{scroll-behavior:smooth}
-
-body{
-  font-family:'Outfit',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-/* ANIMATED BG */
-.bg-layer{
-  position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse 80% 60% at -10% -10%,rgba(139,92,246,0.2) 0%,transparent 55%),
-    radial-gradient(ellipse 60% 50% at 110% 110%,rgba(236,72,153,0.15) 0%,transparent 55%),
-    radial-gradient(ellipse 50% 40% at 50% 50%,rgba(6,182,212,0.06) 0%,transparent 60%);
-  pointer-events:none;z-index:0;
-  animation:bgShift 8s ease-in-out infinite alternate;
-}
-
-@keyframes bgShift{
-  0%{opacity:1}
-  100%{opacity:0.7;transform:scale(1.05)}
-}
-
-.grid-bg{
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(139,92,246,0.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(139,92,246,0.04) 1px,transparent 1px);
-  background-size:40px 40px;
-  pointer-events:none;z-index:0;
-}
-
-/* LOADING */
-#loading{
-  position:fixed;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:24px;
-  background:var(--bg);z-index:1000;
-  transition:opacity 0.5s ease;
-}
-
-.load-logo{
-  position:relative;
-  width:80px;height:80px;
-}
-
-.load-logo-ring{
-  position:absolute;inset:0;
-  border-radius:50%;
-  border:2px solid transparent;
-  border-top-color:var(--p);
-  border-right-color:var(--pk);
-  animation:spin 1s linear infinite;
-}
-
-.load-logo-inner{
-  position:absolute;inset:8px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:26px;
-}
-
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.load-name{
-  font-size:20px;font-weight:800;
-  background:linear-gradient(135deg,var(--p2),var(--pk));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  letter-spacing:3px;text-transform:uppercase;
-}
-
-.load-bar{
-  width:200px;height:2px;
-  background:var(--s3);border-radius:2px;overflow:hidden;
-}
-
-.load-bar-fill{
-  height:100%;
-  background:linear-gradient(90deg,var(--p),var(--pk),var(--cyan));
-  background-size:200% 100%;
-  animation:barMove 1.2s ease infinite;
-}
-
-@keyframes barMove{
-  0%{width:0%;margin-left:0}
-  50%{width:60%}
-  100%{width:0%;margin-left:100%}
-}
-
-/* AUTH */
-#auth-screen{
-  position:fixed;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  z-index:100;padding:20px;
-}
-
-.auth-card{
-  background:rgba(22,22,48,0.6);
-  backdrop-filter:blur(40px);
-  border:1px solid var(--border);
-  border-radius:28px;
-  padding:40px 32px;
-  width:100%;max-width:420px;
-  position:relative;overflow:hidden;
-  animation:cardIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
-}
-
-@keyframes cardIn{
-  from{opacity:0;transform:translateY(40px) scale(0.95)}
-  to{opacity:1;transform:translateY(0) scale(1)}
-}
-
-.auth-card::before{
-  content:'';position:absolute;
-  top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--p),var(--pk),transparent);
-}
-
-.auth-card::after{
-  content:'';position:absolute;
-  top:-100px;right:-100px;
-  width:250px;height:250px;
-  background:radial-gradient(circle,rgba(139,92,246,0.1) 0%,transparent 70%);
-  pointer-events:none;
-}
-
-.auth-top{text-align:center;margin-bottom:32px;}
-
-.auth-brand{
-  display:inline-flex;align-items:center;gap:12px;
-  margin-bottom:8px;
-}
-
-.brand-icon{
-  width:52px;height:52px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-radius:16px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;
-  box-shadow:0 0 30px rgba(139,92,246,0.4);
-}
-
-.brand-name{
-  font-size:26px;font-weight:900;
-  background:linear-gradient(135deg,#fff,var(--p2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-
-.brand-version{
-  font-size:11px;font-weight:700;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  letter-spacing:2px;
-}
-
-.auth-tagline{
-  font-size:13px;color:var(--muted);margin-top:6px;
-}
-
-.tab-row{
-  display:flex;
-  background:rgba(0,0,0,0.3);
-  border-radius:14px;padding:4px;
-  margin-bottom:24px;gap:4px;
-  border:1px solid var(--border2);
-}
-
-.tab-btn{
-  flex:1;padding:11px;
-  border:none;border-radius:10px;
-  background:transparent;
-  color:var(--muted);
-  font-family:'Outfit',sans-serif;
-  font-size:14px;font-weight:600;
-  cursor:pointer;transition:all 0.3s;
-}
-
-.tab-btn.active{
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  color:#fff;
-  box-shadow:0 4px 15px rgba(139,92,246,0.4);
-}
-
-.field{margin-bottom:16px;}
-
-.field label{
-  display:block;
-  font-size:11px;font-weight:700;
-  color:var(--muted);
-  margin-bottom:7px;
-  text-transform:uppercase;letter-spacing:1px;
-}
-
-.field-wrap{position:relative;}
-
-.field-icon{
-  position:absolute;left:14px;top:50%;
-  transform:translateY(-50%);
-  font-size:15px;pointer-events:none;
-}
-
-.field input{
-  width:100%;
-  padding:13px 16px 13px 44px;
-  background:rgba(0,0,0,0.3);
-  border:1px solid var(--border);
-  border-radius:12px;
-  color:var(--text);
-  font-family:'Outfit',sans-serif;
-  font-size:14px;outline:none;
-  transition:all 0.3s;
-}
-
-.field input:focus{
-  border-color:var(--p);
-  box-shadow:0 0 0 3px rgba(139,92,246,0.15);
-  background:rgba(0,0,0,0.4);
-}
-
-.field input::placeholder{color:rgba(112,112,160,0.6)}
-
-.err-box{
-  background:rgba(236,72,153,0.1);
-  border:1px solid rgba(236,72,153,0.3);
-  border-radius:10px;padding:10px 14px;
-  font-size:13px;color:var(--pk);
-  margin-bottom:14px;display:none;
-}
-
-.btn-main{
-  width:100%;padding:15px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border:none;border-radius:14px;
-  color:#fff;
-  font-family:'Outfit',sans-serif;
-  font-size:15px;font-weight:700;
-  cursor:pointer;
-  transition:all 0.3s;
-  box-shadow:0 4px 24px rgba(139,92,246,0.4);
-  position:relative;overflow:hidden;
-  margin-top:4px;
-}
-
-.btn-main::before{
-  content:'';position:absolute;
-  top:0;left:-100%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
-  transition:left 0.5s;
-}
-
-.btn-main:hover::before{left:100%;}
-.btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(139,92,246,0.5);}
-.btn-main:active{transform:scale(0.98);}
-
-.btn-demo{
-  width:100%;padding:13px;
-  background:transparent;
-  border:1px dashed rgba(139,92,246,0.3);
-  border-radius:14px;
-  color:var(--muted);
-  font-family:'Outfit',sans-serif;
-  font-size:14px;font-weight:600;
-  cursor:pointer;
-  transition:all 0.3s;
-  margin-top:10px;
-}
-
-.btn-demo:hover{border-color:var(--p);color:var(--p2);}
-
-/* APP */
-#app-screen{display:none;position:relative;z-index:1;min-height:100vh;}
-
-/* TOPBAR */
-.topbar{
-  position:sticky;top:0;
-  background:rgba(6,6,16,0.85);
-  backdrop-filter:blur(24px);
-  border-bottom:1px solid var(--border2);
-  padding:12px 18px;
-  display:flex;align-items:center;justify-content:space-between;
-  z-index:50;
-}
-
-.top-brand{display:flex;align-items:center;gap:10px;}
-
-.top-icon{
-  width:36px;height:36px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:15px;
-  box-shadow:0 0 12px rgba(139,92,246,0.3);
-}
-
-.top-name{font-size:16px;font-weight:800;}
-.top-ver{
-  font-size:9px;font-weight:700;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  letter-spacing:1px;vertical-align:super;
-}
-
-.top-right{display:flex;align-items:center;gap:8px;}
-
-.avatar{
-  width:34px;height:34px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:800;color:#fff;
-  box-shadow:0 0 12px rgba(139,92,246,0.3);
-}
-
-.btn-logout{
-  padding:7px 14px;
-  background:rgba(236,72,153,0.08);
-  border:1px solid rgba(236,72,153,0.2);
-  border-radius:8px;
-  color:var(--pk);
-  font-size:12px;font-weight:700;
-  cursor:pointer;
-  font-family:'Outfit',sans-serif;
-  transition:all 0.2s;
-}
-
-.btn-logout:hover{background:rgba(236,72,153,0.15);}
-
-/* MAIN CONTENT */
-.wrap{padding:18px 16px 100px;max-width:700px;margin:0 auto;}
-
-/* HERO CARD */
-.hero-card{
-  background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.15));
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:24px;
-  padding:22px 20px;
-  margin-bottom:18px;
-  position:relative;overflow:hidden;
-}
-
-.hero-card::before{
-  content:'';position:absolute;
-  top:-50%;right:-20%;
-  width:200px;height:200px;
-  background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);
-  animation:float 4s ease-in-out infinite;
-}
-
-@keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-10px)}
-}
-
-.hero-card::after{
-  content:'☁️';
-  position:absolute;right:20px;top:50%;
-  transform:translateY(-50%);
-  font-size:64px;opacity:0.15;
-  animation:float 4s ease-in-out infinite;
-}
-
-.hero-greet{
-  font-size:13px;color:rgba(255,255,255,0.5);
-  font-weight:500;margin-bottom:4px;
-  font-family:'JetBrains Mono',monospace;
-}
-
-.hero-name{
-  font-size:20px;font-weight:800;
-  background:linear-gradient(135deg,#fff,var(--p2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-
-.hero-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;}
-
-/* STATS */
-.stats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:10px;margin-bottom:18px;
-}
-
-.stat{
-  background:rgba(22,22,48,0.6);
-  border:1px solid var(--border2);
-  border-radius:18px;
-  padding:16px 12px;text-align:center;
-  transition:all 0.3s;cursor:default;
-  position:relative;overflow:hidden;
-}
-
-.stat::before{
-  content:'';position:absolute;
-  top:0;left:0;right:0;height:2px;
-  opacity:0;transition:opacity 0.3s;
-}
-
-.stat.s1::before{background:linear-gradient(90deg,var(--p),var(--p2));}
-.stat.s2::before{background:linear-gradient(90deg,var(--pk),#f472b6);}
-.stat.s3::before{background:linear-gradient(90deg,var(--cyan),var(--green));}
-
-.stat:hover{transform:translateY(-3px);border-color:var(--border);}
-.stat:hover::before{opacity:1;}
-
-.stat-emoji{font-size:20px;margin-bottom:6px;display:block;}
-.stat-n{
-  font-size:26px;font-weight:900;display:block;
-  font-family:'JetBrains Mono',monospace;
-}
-
-.stat.s1 .stat-n{background:linear-gradient(135deg,var(--p),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.stat.s2 .stat-n{background:linear-gradient(135deg,var(--pk),#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.stat.s3 .stat-n{background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-
-.stat-l{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-
-/* UPLOAD */
-.upzone{
-  border:2px dashed rgba(139,92,246,0.2);
-  border-radius:22px;
-  padding:30px 20px;
-  text-align:center;
-  cursor:pointer;
-  transition:all 0.3s;
-  background:rgba(22,22,48,0.4);
-  margin-bottom:18px;
-  position:relative;overflow:hidden;
-}
-
-.upzone:hover,.upzone.drag{
-  border-color:var(--p);
-  background:rgba(139,92,246,0.06);
-  box-shadow:0 0 30px rgba(139,92,246,0.1);
-}
-
-.upzone input{
-  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
-}
-
-.up-ring{
-  width:64px;height:64px;
-  background:rgba(139,92,246,0.1);
-  border:2px solid rgba(139,92,246,0.3);
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 14px;
-  font-size:24px;
-  transition:all 0.3s;
-}
-
-.upzone:hover .up-ring{
-  background:rgba(139,92,246,0.2);
-  border-color:var(--p);
-  box-shadow:0 0 20px rgba(139,92,246,0.3);
-  transform:scale(1.05);
-}
-
-.up-title{font-size:16px;font-weight:700;margin-bottom:5px;}
-.up-sub{font-size:12px;color:var(--muted);}
-
-.up-tags{
-  display:flex;gap:6px;justify-content:center;
-  margin-top:14px;flex-wrap:wrap;
-}
-
-.up-tag{
-  padding:4px 12px;
-  background:rgba(139,92,246,0.08);
-  border:1px solid rgba(139,92,246,0.15);
-  border-radius:100px;
-  font-size:11px;color:rgba(255,255,255,0.5);
-  font-weight:600;
-}
-
-.up-prog{margin-top:16px;display:none;}
-
-.prog-wrap{
-  background:rgba(0,0,0,0.4);
-  border-radius:100px;height:4px;overflow:hidden;
-}
-
-.prog-fill{
-  height:100%;
-  background:linear-gradient(90deg,var(--p),var(--pk),var(--cyan));
-  background-size:200% 100%;
-  border-radius:100px;width:0%;
-  transition:width 0.3s;
-  animation:progShine 1.5s linear infinite;
-}
-
-@keyframes progShine{
-  0%{background-position:200% 0}
-  100%{background-position:-200% 0}
-}
-
-.prog-label{font-size:12px;color:var(--muted);margin-top:8px;font-family:'JetBrains Mono',monospace;}
-
-/* SEARCH */
-.search-row{
-  position:relative;margin-bottom:14px;
-}
-
-.search-row input{
-  width:100%;
-  padding:13px 16px 13px 46px;
-  background:rgba(22,22,48,0.6);
-  border:1px solid var(--border);
-  border-radius:14px;
-  color:var(--text);
-  font-family:'Outfit',sans-serif;
-  font-size:14px;outline:none;
-  transition:all 0.3s;
-}
-
-.search-row input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(139,92,246,0.1);}
-.search-row input::placeholder{color:rgba(112,112,160,0.5);}
-
-.search-row::before{
-  content:'🔍';
-  position:absolute;left:14px;top:50%;
-  transform:translateY(-50%);
-  font-size:16px;pointer-events:none;
-}
-
-/* FILTERS */
-.filters{
-  display:flex;gap:8px;
-  margin-bottom:16px;
-  overflow-x:auto;padding-bottom:2px;
-  scrollbar-width:none;
-}
-
-.filters::-webkit-scrollbar{display:none;}
-
-.filt{
-  padding:7px 16px;
-  background:rgba(22,22,48,0.6);
-  border:1px solid var(--border2);
-  border-radius:100px;
-  color:var(--muted);
-  font-size:13px;font-weight:600;
-  cursor:pointer;white-space:nowrap;
-  font-family:'Outfit',sans-serif;
-  transition:all 0.3s;
-}
-
-.filt.on{
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-color:transparent;color:#fff;
-  box-shadow:0 4px 12px rgba(139,92,246,0.3);
-}
-
-/* FILES */
-.row-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:14px;
-}
-
-.row-title{font-size:15px;font-weight:700;}
-
-.row-count{
-  font-size:12px;color:var(--muted);
-  background:rgba(22,22,48,0.8);
-  border:1px solid var(--border2);
-  padding:3px 12px;border-radius:100px;
-  font-weight:600;font-family:'JetBrains Mono',monospace;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-}
-
-.fcard{
-  background:rgba(22,22,48,0.5);
-  border:1px solid var(--border2);
-  border-radius:20px;
-  overflow:hidden;
-  transition:all 0.3s;
-  animation:up 0.4s ease both;
-  position:relative;
-}
-
-@keyframes up{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.fcard:hover{
-  border-color:rgba(139,92,246,0.3);
-  transform:translateY(-4px);
-  box-shadow:0 12px 32px rgba(139,92,246,0.15);
-  background:rgba(30,30,60,0.6);
-}
-
-.fcard::before{
-  content:'';position:absolute;
-  top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--p),var(--pk),transparent);
-  opacity:0;transition:opacity 0.3s;
-}
-
-.fcard:hover::before{opacity:1;}
-
-.fcard-img{
-  width:100%;height:120px;
-  object-fit:cover;display:block;
-}
-
-.fcard-icon{
-  width:100%;height:120px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:42px;
-  position:relative;
-}
-
-.fcard-icon::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(236,72,153,0.05));
-}
-
-.fcard-body{padding:12px;}
-
-.fcard-name{
-  font-size:13px;font-weight:700;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  margin-bottom:3px;
-}
-
-.fcard-meta{
-  font-size:11px;color:var(--muted);
-  margin-bottom:10px;
-  font-family:'JetBrains Mono',monospace;
-}
-
-.fcard-acts{display:flex;gap:6px;}
-
-.btn-sh,.btn-dl{
-  flex:1;padding:8px 4px;
-  border-radius:10px;border:none;
-  font-size:12px;font-weight:700;
-  cursor:pointer;
-  font-family:'Outfit',sans-serif;
-  transition:all 0.2s;
-}
-
-.btn-sh{
-  background:rgba(139,92,246,0.1);
-  border:1px solid rgba(139,92,246,0.2);
-  color:var(--p2);
-}
-
-.btn-sh:hover{background:rgba(139,92,246,0.2);}
-
-.btn-dl{
-  background:rgba(236,72,153,0.08);
-  border:1px solid rgba(236,72,153,0.15);
-  color:var(--pk);
-}
-
-.btn-dl:hover{background:rgba(236,72,153,0.15);}
-
-/* EMPTY */
-.empty{
-  grid-column:1/-1;
-  text-align:center;padding:52px 20px;
-}
-
-.empty-ico{font-size:60px;margin-bottom:14px;display:block;opacity:0.6;}
-.empty-t{font-size:16px;font-weight:700;margin-bottom:6px;}
-.empty-s{font-size:13px;color:var(--muted);}
-
-/* BOTTOM NAV */
-.bnav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(6,6,16,0.92);
-  backdrop-filter:blur(24px);
-  border-top:1px solid var(--border2);
-  display:flex;
-  z-index:50;
-  padding:4px 0 calc(4px + env(safe-area-inset-bottom));
-}
-
-.ni{
-  flex:1;padding:10px 8px;
-  display:flex;flex-direction:column;
-  align-items:center;gap:4px;
-  cursor:pointer;
-  border:none;background:none;
-  color:var(--muted);
-  font-family:'Outfit',sans-serif;
-  transition:all 0.3s;
-  position:relative;
-}
-
-.ni.on{color:var(--p2);}
-
-.ni.on::before{
-  content:'';position:absolute;
-  top:0;left:50%;transform:translateX(-50%);
-  width:30px;height:2px;
-  background:linear-gradient(90deg,var(--p),var(--pk));
-  border-radius:0 0 4px 4px;
-}
-
-.ni-ico{font-size:20px;}
-.ni-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-
-/* PROFILE */
-#pview{display:none;}
-
-.pcard{
-  background:rgba(22,22,48,0.5);
-  border:1px solid var(--border2);
-  border-radius:24px;
-  padding:28px 20px;
-  margin-bottom:14px;
-  text-align:center;
-  position:relative;overflow:hidden;
-}
-
-.pcard::before{
-  content:'';position:absolute;
-  top:0;left:0;right:0;height:80px;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(236,72,153,0.1));
-}
-
-.pavatar{
-  width:76px;height:76px;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:30px;font-weight:900;color:#fff;
-  margin:0 auto 14px;
-  position:relative;z-index:1;
-  box-shadow:0 0 30px rgba(139,92,246,0.4);
-  border:3px solid rgba(139,92,246,0.3);
-}
-
-.pname{font-size:20px;font-weight:800;position:relative;z-index:1;}
-.pemail{font-size:13px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace;}
-
-.pstats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:1px;background:var(--border2);
-  margin-top:20px;border-radius:14px;overflow:hidden;
-}
-
-.pstat{
-  background:rgba(12,12,30,0.8);
-  padding:14px 8px;text-align:center;
-}
-
-.pstat-n{
-  font-size:22px;font-weight:900;
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  display:block;
-  font-family:'JetBrains Mono',monospace;
-}
-
-.pstat-l{font-size:11px;color:var(--muted);font-weight:700;}
-
-.icard{
-  background:rgba(22,22,48,0.5);
-  border:1px solid var(--border2);
-  border-radius:16px;
-  padding:16px 18px;
-  margin-bottom:10px;
-  display:flex;align-items:center;gap:14px;
-  transition:all 0.2s;
-}
-
-.icard:hover{border-color:var(--border);transform:translateX(4px);}
-
-.ico-wrap{
-  width:42px;height:42px;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(236,72,153,0.1));
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;
-}
-
-.icard-t{font-size:13px;font-weight:700;}
-.icard-s{font-size:12px;color:var(--muted);margin-top:2px;}
-
-/* BADGE */
-.badge-made{
-  text-align:center;
-  font-size:12px;color:var(--muted);
-  margin-top:20px;
-  font-family:'JetBrains Mono',monospace;
-}
-
-.badge-made span{
-  background:linear-gradient(135deg,var(--p),var(--pk));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  font-weight:700;
-}
-
-/* TOAST */
-.toast{
-  position:fixed;bottom:80px;left:50%;
-  transform:translateX(-50%) translateY(80px);
-  background:rgba(22,22,48,0.95);
-  backdrop-filter:blur(20px);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:12px 20px;
-  font-size:13px;font-weight:600;
-  z-index:999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  white-space:nowrap;max-width:90vw;
-}
-
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.ok{border-color:rgba(16,185,129,0.4);color:var(--green);}
-.toast.err{border-color:rgba(236,72,153,0.4);color:var(--pk);}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Vault - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Base Design */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; }
+        body { background-color: #f4f7fb; color: #333; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Styling */
+        .sidebar { width: 260px; background: #ffffff; padding: 25px 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; z-index: 10; }
+        .logo { font-size: 24px; font-weight: 800; color: #1a73e8; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; flex-grow: 1; }
+        .nav-links li { margin-bottom: 8px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 12px 18px; text-decoration: none; color: #5f6368; border-radius: 10px; font-weight: 500; transition: all 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { background: #e8f0fe; color: #1a73e8; font-weight: 600; }
+        
+        /* Storage Meter */
+        .storage-info { margin-top: auto; padding: 20px 10px 0; border-top: 1px solid #eee; }
+        .storage-text { font-size: 13px; color: #5f6368; margin-bottom: 8px; font-weight: 500; }
+        .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+        .progress { width: 65%; height: 100%; background: #1a73e8; border-radius: 10px; }
+
+        /* Main Content Area */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        
+        /* Top Header */
+        .header { background: #ffffff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .search-bar { display: flex; align-items: center; background: #f1f3f4; padding: 10px 20px; border-radius: 24px; width: 350px; transition: background 0.3s; }
+        .search-bar:focus-within { background: #fff; box-shadow: 0 1px 6px rgba(32,33,36,0.28); }
+        .search-bar input { border: none; background: transparent; outline: none; margin-left: 10px; width: 100%; font-size: 15px; }
+        .user-profile { display: flex; align-items: center; gap: 20px; }
+        .btn-logout { background: #feebeb; color: #d93025; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-logout:hover { background: #fce8e6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Dashboard Content */
+        .dashboard { padding: 40px; max-width: 1200px; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .action-bar h2 { font-size: 28px; color: #202124; font-weight: 600; }
+        .btn-upload { background: #1a73e8; color: white; border: none; padding: 14px 28px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(26,115,232,0.3); transition: all 0.2s; }
+        .btn-upload:hover { background: #1557b0; box-shadow: 0 6px 15px rgba(26,115,232,0.4); transform: translateY(-2px); }
+
+        /* Grid System for Files/Folders */
+        .section-title { margin-bottom: 20px; color: #5f6368; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        
+        /* Cards Design */
+        .file-card { background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.3s ease; border: 1px solid #f0f0f0; display: flex; flex-direction: column; }
+        .file-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-color: #d2e3fc; }
+        .file-icon { font-size: 45px; color: #1a73e8; margin-bottom: 20px; }
+        .file-name { font-weight: 600; font-size: 15px; margin-bottom: 8px; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-size { font-size: 13px; color: #80868b; }
+        
+        /* Folder specific color */
+        .file-card.folder .file-icon { color: #fbbc04; }
+    </style>
 </head>
 <body>
-<div class="bg-layer"></div>
-<div class="grid-bg"></div>
 
-<!-- LOADING -->
-<div id="loading">
-  <div class="load-logo">
-    <div class="load-logo-ring"></div>
-    <div class="load-logo-inner">☁️</div>
-  </div>
-  <div class="load-name">Cloud Vault 2</div>
-  <div class="load-bar"><div class="load-bar-fill"></div></div>
-</div>
-
-<!-- AUTH -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <div class="auth-top">
-      <div class="auth-brand">
-        <div class="brand-icon">☁️</div>
-        <div>
-          <div class="brand-name">Cloud Vault <span class="brand-version">v2</span></div>
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-cloud"></i> Cloud Vault
         </div>
-      </div>
-      <div class="auth-tagline">Your premium personal cloud storage</div>
+        <ul class="nav-links">
+            <li><a href="#" class="active" id="nav-home"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#" id="nav-files"><i class="fas fa-folder"></i> My Files</a></li>
+            <li><a href="#" id="nav-shared"><i class="fas fa-user-friends"></i> Shared</a></li>
+            <li><a href="#" id="nav-trash"><i class="fas fa-trash"></i> Trash</a></li>
+        </ul>
+        <div class="storage-info">
+            <p class="storage-text">Storage</p>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <p class="storage-text" style="font-size: 12px;">65 GB used of 100 GB</p>
+        </div>
     </div>
 
-    <div class="tab-row">
-      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+    <div class="main-content">
+        <div class="header">
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: #9aa0a6;"></i>
+                <input type="text" placeholder="Search in Cloud Vault...">
+            </div>
+            <div class="user-profile">
+                <div style="text-align: right;">
+                    <div style="font-weight: 600; font-size: 14px; color: #202124;">Admin User</div>
+                    <div style="font-size: 12px; color: #34a853; font-weight: 500;">● Online</div>
+                </div>
+                <button class="btn-logout" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="action-bar">
+                <h2>Welcome back!</h2>
+                <button class="btn-upload" id="btn-upload">
+                    <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                </button>
+                <input type="file" id="file-input" style="display: none;" multiple>
+            </div>
+
+            <h3 class="section-title">Quick Access</h3>
+            <div class="files-grid">
+                <div class="file-card folder" onclick="handleItemClick('Documents Folder')">
+                    <i class="fas fa-folder file-icon"></i>
+                    <div class="file-name">Documents</div>
+                    <div class="file-size">12 Files</div>
+                </div>
+                <div class="file-card folder" onclick="handleItemClick('Images Folder')">
+                    <i class="fas fa-folder file-icon"></i>
+                    <div class="file-name">Images & Media</div>
+                    <div class="file-size">45 Files</div>
+                </div>
+                <div class="file-card folder" onclick="handleItemClick('Projects Folder')">
+                    <i class="fas fa-folder file-icon"></i>
+                    <div class="file-name">App Projects</div>
+                    <div class="file-size">8 Files</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Recent Files</h3>
+            <div class="files-grid">
+                <div class="file-card" onclick="handleItemClick('Design_System.pdf')">
+                    <i class="fas fa-file-pdf file-icon" style="color: #ea4335;"></i>
+                    <div class="file-name">Design_System.pdf</div>
+                    <div class="file-size">2.4 MB</div>
+                </div>
+                <div class="file-card" onclick="handleItemClick('User_Data.csv')">
+                    <i class="fas fa-file-excel file-icon" style="color: #34a853;"></i>
+                    <div class="file-name">User_Data.csv</div>
+                    <div class="file-size">840 KB</div>
+                </div>
+                <div class="file-card" onclick="handleItemClick('Pitch_Deck.pptx')">
+                    <i class="fas fa-file-powerpoint file-icon" style="color: #fbbc04;"></i>
+                    <div class="file-name">Pitch_Deck.pptx</div>
+                    <div class="file-size">5.1 MB</div>
+                </div>
+                <div class="file-card" onclick="handleItemClick('main_config.py')">
+                    <i class="fab fa-python file-icon" style="color: #3776ab;"></i>
+                    <div class="file-name">main_config.py</div>
+                    <div class="file-size">12 KB</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="err-box" id="aerr"></div>
-
-    <div class="field">
-      <label>Email Address</label>
-      <div class="field-wrap">
-        <span class="field-icon">📧</span>
-        <input type="email" id="aemail" placeholder="you@example.com"/>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Password</label>
-      <div class="field-wrap">
-        <span class="field-icon">🔒</span>
-        <input type="password" id="apass" placeholder="Min 6 characters"/>
-      </div>
-    </div>
-
-    <button class="btn-main" id="abtn" onclick="doAuth()">Login</button>
-    <button class="btn-demo" onclick="doDemo()">✨ Try Demo Account</button>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app-screen">
-  <div class="topbar">
-    <div class="top-brand">
-      <div class="top-icon">☁️</div>
-      <span class="top-name">Cloud Vault <sup class="top-ver">v2</sup></span>
-    </div>
-    <div class="top-right">
-      <div class="avatar" id="uavatar">G</div>
-      <button class="btn-logout" onclick="doLogout()">Logout</button>
-    </div>
-  </div>
-
-  <!-- HOME -->
-  <div id="hview">
-    <div class="wrap">
-      <div class="hero-card">
-        <div class="hero-greet">// welcome back</div>
-        <div class="hero-name" id="hname">Loading...</div>
-        <div class="hero-sub">All your files, safe & secure ☁️</div>
-      </div>
-
-      <div class="stats">
-        <div class="stat s1">
-          <span class="stat-emoji">📁</span>
-          <span class="stat-n" id="sttotal">0</span>
-          <span class="stat-l">Total</span>
-        </div>
-        <div class="stat s2">
-          <span class="stat-emoji">🖼️</span>
-          <span class="stat-n" id="stimgs">0</span>
-          <span class="stat-l">Images</span>
-        </div>
-        <div class="stat s3">
-          <span class="stat-emoji">📄</span>
-          <span class="stat-n" id="stoth">0</span>
-          <span class="stat-l">Others</span>
-        </div>
-      </div>
-
-      <div class="upzone" id="upzone">
-        <input type="file" id="finput" multiple accept="*/*" onchange="handleFiles(this.files)"/>
-        <div class="up-ring">📤</div>
-        <div class="up-title">Upload Files</div>
-        <div class="up-sub">Tap to select • Any file type supported</div>
-        <div class="up-tags">
-          <span class="up-tag">📷 Photos</span>
-          <span class="up-tag">🎬 Videos</span>
-          <span class="up-tag">📄 Docs</span>
-          <span class="up-tag">🎵 Music</span>
-          <span class="up-tag">📦 More</span>
-        </div>
-        <div class="up-prog" id="uprog">
-          <div class="prog-wrap"><div class="prog-fill" id="pbar"></div></div>
-          <div class="prog-label" id="plbl">Uploading...</div>
-        </div>
-      </div>
-
-      <div class="search-row">
-        <input type="text" id="srch" placeholder="Search your files..." oninput="renderFiles()"/>
-      </div>
-
-      <div class="filters">
-        <button class="filt on" onclick="setFilt('all',this)">All Files</button>
-        <button class="filt" onclick="setFilt('image',this)">🖼️ Images</button>
-        <button class="filt" onclick="setFilt('video',this)">🎬 Videos</button>
-        <button class="filt" onclick="setFilt('audio',this)">🎵 Audio</button>
-        <button class="filt" onclick="setFilt('doc',this)">📄 Docs</button>
-      </div>
-
-      <div class="row-head">
-        <span class="row-title">My Files</span>
-        <span class="row-count" id="fcount">0 files</span>
-      </div>
-
-      <div class="grid" id="fgrid">
-        <div class="empty">
-          <span class="empty-ico">🗂️</span>
-          <div class="empty-t">Nothing here yet</div>
-          <div class="empty-s">Upload your first file above!</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROFILE -->
-  <div id="pview">
-    <div class="wrap">
-      <div class="pcard">
-        <div class="pavatar" id="pavatar">G</div>
-        <div class="pname" id="pname">User</div>
-        <div class="pemail" id="pemail">loading...</div>
-        <div class="pstats">
-          <div class="pstat"><span class="pstat-n" id="pp1">0</span><span class="pstat-l">Files</span></div>
-          <div class="pstat"><span class="pstat-n" id="pp2">0</span><span class="pstat-l">Images</span></div>
-          <div class="pstat"><span class="pstat-n" id="pp3">0</span><span class="pstat-l">Others</span></div>
-        </div>
-      </div>
-
-      <div class="icard">
-        <div class="ico-wrap">🎓</div>
-        <div><div class="icard-t">Minor Project</div><div class="icard-s">Cloud Storage Application — 2025</div></div>
-      </div>
-      <div class="icard">
-        <div class="ico-wrap">⚡</div>
-        <div><div class="icard-t">Tech Stack</div><div class="icard-s">Firebase + Netlify + HTML/CSS/JS</div></div>
-      </div>
-      <div class="icard">
-        <div class="ico-wrap">🔒</div>
-        <div><div class="icard-t">Secure & Private</div><div class="icard-s">Your files are encrypted & private</div></div>
-      </div>
-      <div class="icard">
-        <div class="ico-wrap">🌐</div>
-        <div><div class="icard-t">Version</div><div class="icard-s">Cloud Vault v2.0 — Premium Edition</div></div>
-      </div>
-      <div class="icard">
-        <div class="ico-wrap">👨‍💻</div>
-        <div><div class="icard-t">Developer</div><div class="icard-s" id="dev-name">Gopal and harsh</div></div>
-      </div>
-
-      <div class="badge-made">Made with ❤️ by <span id="badge-dev">Harsh singh Gopal Gautam</span></div>
-    </div>
-  </div>
-
-  <nav class="bnav">
-    <button class="ni on" onclick="showV('h',this)">
-      <span class="ni-ico">🏠</span>
-      <span class="ni-lbl">Home</span>
-    </button>
-    <button class="ni" onclick="showV('p',this)">
-      <span class="ni-ico">👤</span>
-      <span class="ni-lbl">Profile</span>
-    </button>
-  </nav>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const cfg = {
-  apiKey:"AIzaSyB5tCxRJmFxc5qL9iqu8ehN6x9lFczStwY",
-  authDomain:"cloud-vault-b9e4d.firebaseapp.com",
-  projectId:"cloud-vault-b9e4d",
-  storageBucket:"cloud-vault-b9e4d.firebasestorage.app",
-  messagingSenderId:"280256359373",
-  appId:"1:280256359373:web:4b5f43905089584b903284"
-};
-
-const fb = initializeApp(cfg);
-const auth = getAuth(fb);
-const db = getFirestore(fb);
-
-let user=null, files=[], filt='all', tab='login';
-
-window.switchTab = t => {
-  tab=t;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='signup')));
-  document.getElementById('abtn').textContent = t==='login'?'Login':'Create Account';
-  document.getElementById('aerr').style.display='none';
-};
-
-window.doAuth = async () => {
-  const e=document.getElementById('aemail').value.trim();
-  const p=document.getElementById('apass').value;
-  const er=document.getElementById('aerr');
-  er.style.display='none';
-  if(!e||!p){er.textContent='Please fill all fields!';er.style.display='block';return;}
-  try{
-    if(tab==='login') await signInWithEmailAndPassword(auth,e,p);
-    else await createUserWithEmailAndPassword(auth,e,p);
-  }catch(x){
-    er.textContent=x.message.replace('Firebase: ','').replace(/\(.*\)/,'');
-    er.style.display='block';
-  }
-};
-
-window.doDemo = async () => {
-  const er=document.getElementById('aerr'); er.style.display='none';
-  try{ await signInWithEmailAndPassword(auth,'demo@cloudvault.com','demo123'); }
-  catch(x){
-    try{ await createUserWithEmailAndPassword(auth,'demo@cloudvault.com','demo123'); }
-    catch(x2){ er.textContent='Demo failed. Please try manually.'; er.style.display='block'; }
-  }
-};
-
-window.doLogout = () => signOut(auth);
-
-onAuthStateChanged(auth, async u => {
-  document.getElementById('loading').style.opacity='0';
-  setTimeout(()=>document.getElementById('loading').style.display='none',500);
-  if(u){
-    user=u;
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    const ini=u.email.charAt(0).toUpperCase();
-    ['uavatar','pavatar'].forEach(id=>document.getElementById(id).textContent=ini);
-    document.getElementById('hname').textContent=u.email.split('@')[0];
-    document.getElementById('pname').textContent=u.email.split('@')[0];
-    document.getElementById('pemail').textContent=u.email;
-    await loadFiles();
-  } else {
-    user=null;
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app-screen').style.display='none';
-  }
-});
-
-window.showV = (v,btn) => {
-  document.getElementById('hview').style.display=v==='h'?'block':'none';
-  document.getElementById('pview').style.display=v==='p'?'block':'none';
-  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-};
-
-window.handleFiles = async fs => {
-  if(!fs.length) return;
-  const pe=document.getElementById('uprog');
-  const pb=document.getElementById('pbar');
-  const pl=document.getElementById('plbl');
-  pe.style.display='block';
-
-  for(let i=0;i<fs.length;i++){
-    const f=fs[i];
-    pl.textContent=`Uploading ${f.name}...`;
-    pb.style.width='50%';
-    try{
-      let url=null;
-      if(f.size<400000 && f.type.startsWith('image/')){
-        url = await new Promise((res,rej)=>{
-          const r=new FileReader();
-          r.onload=()=>res(r.result);r.onerror=rej;
-          r.readAsDataURL(f);
+    <script>
+        // 1. Logout Functionality
+        document.getElementById('btn-logout').addEventListener('click', function() {
+            let confirmLogout = confirm("Kya aap Cloud Vault se logout karna chahte hain?");
+            if(confirmLogout) {
+                alert("Logout successful! Redirecting to Login screen...");
+                // Jab backend joodenge tab yahan likhenge: window.location.href = 'login.html';
+            }
         });
-      }
-      await addDoc(collection(db,'files'),{
-        uid:user.uid,name:f.name,url,
-        type:f.type,size:f.size,
-        createdAt:new Date().toISOString()
-      });
-      pb.style.width='100%';
-      toast('✅ '+f.name+' uploaded!','ok');
-    }catch(e){ toast('❌ Error uploading '+f.name,'err'); }
-  }
-  pe.style.display='none'; pb.style.width='0%';
-  document.getElementById('finput').value='';
-  await loadFiles();
-};
 
-async function loadFiles(){
-  try{
-    const q=query(collection(db,'files'),where('uid','==',user.uid));
-    const s=await getDocs(q);
-    files=[];
-    s.forEach(d=>files.push({id:d.id,...d.data()}));
-    files.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-    renderFiles();
-  }catch(e){console.error(e);}
-}
+        // 2. Upload Button Functionality (Real system design)
+        const uploadBtn = document.getElementById('btn-upload');
+        const fileInput = document.getElementById('file-input');
 
-window.renderFiles = () => {
-  const srch=document.getElementById('srch').value.toLowerCase();
-  const vis=files.filter(f=>{
-    const ms=f.name.toLowerCase().includes(srch);
-    const mf=filt==='all'||
-      (filt==='image'&&f.type?.startsWith('image/'))||
-      (filt==='video'&&f.type?.startsWith('video/'))||
-      (filt==='audio'&&f.type?.startsWith('audio/'))||
-      (filt==='doc'&&!f.type?.match(/^(image|video|audio)\//));
-    return ms&&mf;
-  });
+        uploadBtn.addEventListener('click', function() {
+            fileInput.click(); // Hidden input ko trigger karna
+        });
 
-  const imgs=files.filter(f=>f.type?.startsWith('image/'));
-  const oth=files.filter(f=>!f.type?.startsWith('image/'));
-  ['sttotal','pp1'].forEach(id=>document.getElementById(id).textContent=files.length);
-  ['stimgs','pp2'].forEach(id=>document.getElementById(id).textContent=imgs.length);
-  ['stoth','pp3'].forEach(id=>document.getElementById(id).textContent=oth.length);
-  document.getElementById('fcount').textContent=vis.length+' files';
+        fileInput.addEventListener('change', function() {
+            if(this.files.length > 0) {
+                // Kon si file select hui uska naam nikalna
+                let fileNames = Array.from(this.files).map(f => f.name).join(', ');
+                alert("Ready to upload: " + fileNames + "\n(Backend deploy hone par ye sidha cloud storage mein jayega)");
+            }
+        });
 
-  const g=document.getElementById('fgrid');
-  if(!vis.length){
-    g.innerHTML=`<div class="empty">
-      <span class="empty-ico">${files.length?'🔍':'🗂️'}</span>
-      <div class="empty-t">${files.length?'No results found':'Nothing here yet'}</div>
-      <div class="empty-s">${files.length?'Try different search':'Upload your first file!'}</div>
-    </div>`;
-    return;
-  }
+        // 3. Card Click System
+        function handleItemClick(itemName) {
+            alert("Opening: " + itemName + "\nLoading preview...");
+        }
 
-  g.innerHTML=vis.map((f,i)=>{
-    const isImg=f.type?.startsWith('image/');
-    const ico=getIco(f.type);
-    const preview=isImg&&f.url
-      ?`<img class="fcard-img" src="${f.url}" loading="lazy"/>`
-      :`<div class="fcard-icon">${ico}</div>`;
-    const safeUrl=(f.url||"").replace(/"/g,"");
-    return `<div class="fcard" style="animation-delay:${i*0.06}s" data-id="${f.id}" data-url="${safeUrl}">
-      ${preview}
-      <div class="fcard-body">
-        <div class="fcard-name">${f.name}</div>
-        <div class="fcard-meta">${fmtSz(f.size)} • ${ago(f.createdAt)}</div>
-        <div class="fcard-acts">
-          <button class="btn-sh" onclick="shareF(this)">Share &#128279;</button>
-          <button class="btn-dl" onclick="delF(this)">Delete &#128465;</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-};
-
-window.setFilt=(f,btn)=>{
-  filt=f;
-  document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  renderFiles();
-};
-
-window.shareF=(btn)=>{
-  const card=btn.closest('.fcard');
-  const url=card.dataset.url||'';
-  const name=card.querySelector('.fcard-name').textContent;
-  if(!url){navigator.clipboard?.writeText(name);toast('📋 Name copied!','ok');return;}
-  if(navigator.share) navigator.share({title:name,url});
-  else{navigator.clipboard?.writeText(url);toast('🔗 Link copied!','ok');}
-};
-
-window.delF=async btn=>{
-  try{
-    const id=btn.closest('.fcard').dataset.id;
-    await deleteDoc(doc(db,'files',id));
-    files=files.filter(f=>f.id!==id);
-    renderFiles();
-    toast('Deleted!','ok');
-  }catch(e){toast('Error!','err');}
-};
-
-function getIco(t){
-  if(!t) return '📄';
-  if(t.startsWith('image/')) return '🖼️';
-  if(t.startsWith('video/')) return '🎬';
-  if(t.startsWith('audio/')) return '🎵';
-  if(t.includes('pdf')) return '📕';
-  if(t.includes('zip')||t.includes('rar')) return '🗜️';
-  if(t.includes('word')||t.includes('doc')) return '📝';
-  if(t.includes('sheet')||t.includes('excel')) return '📊';
-  if(t.includes('presentation')||t.includes('powerpoint')) return '📊';
-  return '📄';
-}
-
-function fmtSz(b){
-  if(!b) return '';
-  if(b<1024) return b+'B';
-  if(b<1048576) return (b/1024).toFixed(1)+'KB';
-  return (b/1048576).toFixed(1)+'MB';
-}
-
-function ago(iso){
-  if(!iso) return '';
-  const d=Date.now()-new Date(iso).getTime();
-  const m=Math.floor(d/60000);
-  if(m<1) return 'Just now';
-  if(m<60) return m+'m ago';
-  const h=Math.floor(m/60);
-  if(h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
-}
-
-const zone=document.getElementById('upzone');
-zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
-zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
-zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');handleFiles(e.dataTransfer.files);});
-
-function toast(msg,type){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className=`toast ${type} show`;
-  setTimeout(()=>t.className=`toast ${type}`,3000);
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('auth-screen').style.display!=='none') doAuth();
-});
-</script>
+        // 4. Sidebar Active Navigation
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                navLinks.forEach(l => l.classList.remove('active')); // Purane selection ko hatana
+                this.classList.add('active'); // Naye selection ko highlight karna
+            });
+        });
+    </script>
 </body>
 </html>
