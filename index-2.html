@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MyCloud – Your Personal Cloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #0052cc;
+      --primary-light: #1a6ef5;
+      --accent: #00c6ff;
+      --accent2: #ff6b35;
+      --bg: #f0f4ff;
+      --surface: #ffffff;
+      --surface2: #e8efff;
+      --text: #0a0e1a;
+      --text-muted: #6b7a99;
+      --border: rgba(0,82,204,0.12);
+      --shadow: 0 8px 32px rgba(0,82,204,0.10);
+      --radius: 18px;
+      --sidebar-w: 260px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 18px 24px;
+      position: fixed;
+      top: 0; left: 0; height: 100vh;
+      z-index: 100;
+      box-shadow: 4px 0 24px rgba(0,82,204,0.06);
+      transition: transform 0.3s;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 36px;
+      padding: 0 6px;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(0,82,204,0.3);
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .upload-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 18px rgba(0,82,204,0.28);
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,82,204,0.38);
+    }
+
+    .upload-btn .plus {
+      width: 26px; height: 26px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      font-weight: 300;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.18s;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover { background: var(--surface2); color: var(--primary); }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(0,82,204,0.10), rgba(0,198,255,0.08));
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .nav-item .nav-icon { font-size: 18px; width: 22px; text-align: center; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .nav-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    .storage-card {
+      background: linear-gradient(135deg, #f0f4ff, #e8efff);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: auto;
+      border: 1.5px solid var(--border);
+    }
+
+    .storage-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .storage-bar-wrap {
+      height: 6px;
+      background: rgba(0,82,204,0.12);
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .storage-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      width: 62%;
+      animation: growBar 1.2s ease forwards;
+    }
+
+    @keyframes growBar {
+      from { width: 0; }
+      to { width: 62%; }
+    }
+
+    .storage-nums {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .storage-nums strong { color: var(--primary); font-weight: 700; }
+
+    .upgrade-btn {
+      margin-top: 14px;
+      background: linear-gradient(135deg, var(--accent2), #ff8c55);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .upgrade-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+
+    /* ─── MAIN CONTENT ─── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1.5px solid var(--border);
+      padding: 0 32px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 12px rgba(0,82,204,0.05);
+    }
+
+    .search-wrap {
+      flex: 1;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px 11px 44px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: border 0.2s;
+    }
+
+    .search-wrap input:focus { border-color: var(--primary); background: #fff; }
+
+    .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+      color: var(--text-muted);
+    }
+
+    .topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+
+    .icon-btn {
+      width: 40px; height: 40px;
+      border-radius: 11px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: all 0.18s;
+      position: relative;
+    }
+
+    .icon-btn:hover { background: var(--surface); color: var(--primary); border-color: var(--primary); }
+
+    .notif-dot {
+      width: 8px; height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      position: absolute;
+      top: 6px; right: 6px;
+      border: 2px solid var(--surface);
+    }
+
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      box-shadow: 0 2px 10px rgba(0,82,204,0.2);
+    }
+
+    /* ─── PAGE CONTENT ─── */
+    .page { padding: 32px; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .page-sub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .view-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 4px;
+      border: 1.5px solid var(--border);
+    }
+
+    .view-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-muted);
+      transition: all 0.18s;
+    }
+
+    .view-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 6px rgba(0,82,204,0.10); }
+
+    /* ─── QUICK STATS ─── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.10s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.blue { background: rgba(0,82,204,0.10); }
+    .stat-icon.cyan { background: rgba(0,198,255,0.12); }
+    .stat-icon.orange { background: rgba(255,107,53,0.10); }
+    .stat-icon.green { background: rgba(0,200,120,0.10); }
+
+    .stat-info strong {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      display: block;
+    }
+
+    .stat-info span { font-size: 12.5px; color: var(--text-muted); }
+
+    /* ─── RECENT FILES ─── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .see-all {
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ─── FILES GRID ─── */
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .file-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px 16px 16px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.22s;
+      box-shadow: 0 2px 10px rgba(0,82,204,0.06);
+      animation: fadeUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .file-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,82,204,0.14); }
+    .file-card:hover::before { opacity: 1; }
+    .file-card.img::before { background: linear-gradient(90deg, #ff6b35, #ffb347); }
+    .file-card.doc::before { background: linear-gradient(90deg, #0052cc, #00c6ff); }
+    .file-card.vid::before { background: linear-gradient(90deg, #a855f7, #ec4899); }
+    .file-card.mus::before { background: linear-gradient(90deg, #00c6ff, #00b894); }
+    .file-card.zip::before { background: linear-gradient(90deg, #6b7a99, #a0aec0); }
+
+    .file-thumb {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    .file-thumb.img { background: rgba(255,107,53,0.10); }
+    .file-thumb.doc { background: rgba(0,82,204,0.10); }
+    .file-thumb.vid { background: rgba(168,85,247,0.10); }
+    .file-thumb.mus { background: rgba(0,198,255,0.10); }
+    .file-thumb.zip { background: rgba(107,122,153,0.10); }
+
+    .file-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta { font-size: 11.5px; color: var(--text-muted); }
+
+    .file-more {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: all 0.18s;
+    }
+
+    .file-card:hover .file-more { opacity: 1; background: var(--surface2); }
+
+    /* ─── FOLDERS ─── */
+    .folders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .folder-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 18px 20px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.22s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .folder-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,82,204,0.12); border-color: var(--primary); }
+
+    .folder-icon {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+
+    .folder-icon.yellow { background: rgba(255,193,7,0.13); }
+    .folder-icon.blue { background: rgba(0,82,204,0.10); }
+    .folder-icon.purple { background: rgba(168,85,247,0.10); }
+    .folder-icon.green { background: rgba(0,200,120,0.10); }
+
+    .folder-name { font-size: 14px; font-weight: 600; }
+    .folder-count { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ─── DRAG DROP ZONE ─── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(0,82,204,0.018);
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(0,82,204,0.05);
+    }
+
+    .drop-zone-icon { font-size: 36px; }
+    .drop-zone-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .drop-zone-sub { font-size: 13px; color: var(--text-muted); }
+
+    .drop-zone-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 0.18s;
+    }
+
+    .drop-zone-btn:hover { background: var(--primary-light); }
+
+    /* ─── FILTER BAR ─── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 7px 16px;
+      border-radius: 30px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-chip.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 0px; }
+      .sidebar { transform: translateX(-260px); width: 260px; }
+      .main { margin-left: 0; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .page { padding: 18px; }
+      .topbar { padding: 0 16px; }
+    }
+
+    /* ─── UPLOAD PROGRESS (demo) ─── */
+    .upload-toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 22px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      min-width: 280px;
+      z-index: 999;
+      animation: slideIn 0.4s cubic-bezier(.22,1,.36,1);
+      display: none;
+    }
+
+    .upload-toast.show { display: block; }
+
+    @keyframes slideIn {
+      from { opacity:0; transform: translateY(30px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    .toast-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .toast-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+    .toast-bar-wrap { height: 5px; background: var(--surface2); border-radius: 10px; overflow: hidden; }
+    .toast-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* User Profile mini */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.18s;
+      margin-bottom: 12px;
+    }
+
+    .user-info:hover { background: var(--surface2); }
+
+    .user-details strong { font-size: 13.5px; display: block; font-weight: 600; }
+    .user-details span { font-size: 12px; color: var(--text-muted); }
+
+    .user-avatar-sm {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">☁️</div>
+      <span class="logo-text">MyCloud</span>
+    </div>
+
+    <button class="upload-btn" onclick="startUploadDemo()">
+      <span class="plus">+</span>
+      Upload Files
+    </button>
+
+    <div class="nav-section-title">Main</div>
+
+    <div class="nav-item active" onclick="setNav(this)">
+      <span class="nav-icon">🏠</span> Home
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📁</span> My Files
+      <span class="nav-badge">24</span>
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">⭐</span> Starred
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🕐</span> Recent
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🔗</span> Shared with me
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-title">Categories</div>
+
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🖼️</span> Photos
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🎬</span> Videos
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">🎵</span> Music
+    </div>
+    <div class="nav-item" onclick="setNav(this)">
+      <span class="nav-icon">📄</span> Documents
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="user-info">
+      <div class="user-avatar-sm">R</div>
+      <div class="user-details">
+        <strong>Rahul Sharma</strong>
+        <span>Free Plan</span>
+      </div>
+    </div>
+
+    <div class="storage-card">
+      <div class="storage-label">Storage Used</div>
+      <div class="storage-bar-wrap">
+        <div class="storage-bar"></div>
+      </div>
+      <div class="storage-nums">
+        <span><strong>9.3 GB</strong> used</span>
+        <span>15 GB total</span>
+      </div>
+      <button class="upgrade-btn">⚡ Upgrade to Pro</button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search files, folders, people…" />
+      </div>
+
+      <div class="topbar-actions">
+        <div class="icon-btn" title="Sort">⇅</div>
+        <div class="icon-btn" title="Notifications">
+          🔔
+          <div class="notif-dot"></div>
+        </div>
+        <div class="icon-btn" title="Settings">⚙️</div>
+        <div class="avatar">R</div>
+      </div>
+    </header>
+
+    <!-- PAGE -->
+    <div class="page">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Good morning, Rahul 👋</div>
+          <div class="page-sub">Tuesday, 28 April 2026 · 9.3 GB of 15 GB used</div>
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" title="Grid">⊞</button>
+          <button class="view-btn" title="List">☰</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">🖼️</div>
+          <div class="stat-info">
+            <strong>1,248</strong>
+            <span>Photos</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon cyan">🎬</div>
+          <div class="stat-info">
+            <strong>84</strong>
+            <span>Videos</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">📄</div>
+          <div class="stat-info">
+            <strong>312</strong>
+            <span>Documents</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🎵</div>
+          <div class="stat-info">
+            <strong>567</strong>
+            <span>Music</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div class="drop-zone" id="dropZone"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault();this.classList.remove('dragover');startUploadDemo()">
+        <div class="drop-zone-icon">☁️</div>
+        <div class="drop-zone-title">Drop files here to upload</div>
+        <div class="drop-zone-sub">or click the button below · Max 2GB per file</div>
+        <button class="drop-zone-btn" onclick="startUploadDemo()">Choose Files</button>
+      </div>
+
+      <!-- FOLDERS -->
+      <div class="section-header">
+        <div class="section-title">📁 Folders</div>
+        <a class="see-all">See all</a>
+      </div>
+
+      <div class="folders-grid">
+        <div class="folder-card">
+          <div class="folder-icon yellow">📂</div>
+          <div>
+            <div class="folder-name">Family Photos</div>
+            <div class="folder-count">142 files · 3.1 GB</div>
+          </div>
+        </div>
+        <div class="folder-card">
+          <div class="folder-icon blue">📂</div>
+          <div>
+            <div class="folder-name">Work Documents</div>
+            <div class="folder-count">89 files · 512 MB</div>
+          </div>
+        </div>
+        <div class="folder-card">
+          <div class="folder-icon purple">📂</div>
+          <div>
+            <div class="folder-name">Projects</div>
+            <div class="folder-count">56 files · 1.8 GB</div>
+          </div>
+        </div>
+        <div class="folder-card">
+          <div class="folder-icon green">📂</div>
+          <div>
+            <div class="folder-name">Backups</div>
+            <div class="folder-count">12 files · 2.4 GB</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="filter-bar">
+        <div class="filter-chip active" onclick="setFilter(this)">All Files</div>
+        <div class="filter-chip" onclick="setFilter(this)">🖼️ Images</div>
+        <div class="filter-chip" onclick="setFilter(this)">🎬 Videos</div>
+        <div class="filter-chip" onclick="setFilter(this)">📄 Docs</div>
+        <div class="filter-chip" onclick="setFilter(this)">🎵 Music</div>
+        <div class="filter-chip" onclick="setFilter(this)">📦 Zip</div>
+      </div>
+
+      <!-- RECENT FILES -->
+      <div class="section-header">
+        <div class="section-title">🕐 Recent Files</div>
+        <a class="see-all">See all</a>
+      </div>
+
+      <div class="files-grid" id="filesGrid">
+        <div class="file-card img" style="animation-delay:0.05s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb img">🖼️</div>
+          <div class="file-name">Vacation_2025.jpg</div>
+          <div class="file-meta">4.2 MB · 2 days ago</div>
+        </div>
+        <div class="file-card doc" style="animation-delay:0.10s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb doc">📄</div>
+          <div class="file-name">Project_Plan.docx</div>
+          <div class="file-meta">820 KB · Yesterday</div>
+        </div>
+        <div class="file-card vid" style="animation-delay:0.15s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb vid">🎬</div>
+          <div class="file-name">Birthday_Party.mp4</div>
+          <div class="file-meta">1.2 GB · 3 days ago</div>
+        </div>
+        <div class="file-card mus" style="animation-delay:0.20s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb mus">🎵</div>
+          <div class="file-name">Favorites_Mix.mp3</div>
+          <div class="file-meta">18 MB · 4 days ago</div>
+        </div>
+        <div class="file-card doc" style="animation-delay:0.25s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb doc">📊</div>
+          <div class="file-name">Budget_2026.xlsx</div>
+          <div class="file-meta">640 KB · Today</div>
+        </div>
+        <div class="file-card zip" style="animation-delay:0.30s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb zip">📦</div>
+          <div class="file-name">Backup_April.zip</div>
+          <div class="file-meta">2.1 GB · Today</div>
+        </div>
+        <div class="file-card img" style="animation-delay:0.35s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb img">📷</div>
+          <div class="file-name">Profile_Photo.png</div>
+          <div class="file-meta">1.8 MB · 5 days ago</div>
+        </div>
+        <div class="file-card doc" style="animation-delay:0.40s">
+          <button class="file-more">⋯</button>
+          <div class="file-thumb doc">📋</div>
+          <div class="file-name">Resume_2026.pdf</div>
+          <div class="file-meta">380 KB · 1 week ago</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UPLOAD TOAST -->
+  <div class="upload-toast" id="uploadToast">
+    <div class="toast-title">⬆️ Uploading files…</div>
+    <div class="toast-sub" id="toastSub">Preparing…</div>
+    <div class="toast-bar-wrap">
+      <div class="toast-bar" id="toastBar"></div>
+    </div>
+  </div>
+
+  <script>
+    function setNav(el) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function setFilter(el) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // View toggle
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Upload demo animation
+    function startUploadDemo() {
+      const toast = document.getElementById('uploadToast');
+      const bar = document.getElementById('toastBar');
+      const sub = document.getElementById('toastSub');
+      toast.classList.add('show');
+      bar.style.width = '0%';
+      sub.textContent = 'Preparing upload…';
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 8 + 3;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          sub.textContent = '✅ Upload complete!';
+          setTimeout(() => {
+            toast.classList.remove('show');
+            bar.style.width = '0%';
+          }, 2000);
+        } else {
+          sub.textContent = `Uploading... ${Math.round(progress)}%`;
+        }
+        bar.style.width = progress + '%';
+      }, 120);
+    }
+  </script>
+</body>
+</html>
