@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Cloud Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#0066cc;
+  --blue2:#0052a3;
+  --light:#e8f0fe;
+  --text:#1a1a1a;
+  --muted:#666;
+  --border:#e0e0e0;
+  --bg:#f5f5f5;
+  --white:#fff;
+  --green:#00a651;
+  --red:#d32f2f;
+}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:999;}
+.ld-logo{width:80px;height:80px;background:var(--blue);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;}
+.ld-name{font-size:24px;font-weight:700;color:var(--blue);}
+.ld-bar{width:180px;height:3px;background:#e0e0e0;border-radius:3px;overflow:hidden;}
+.ld-fill{height:100%;background:var(--blue);border-radius:3px;animation:ldgo 1.5s ease-in-out infinite;}
+@keyframes ldgo{0%{width:0%;margin-left:0}50%{width:70%}100%{width:0%;margin-left:100%}}
+
+/* AUTH */
+#auth-screen{display:none;min-height:100vh;background:#fff;}
+.auth-top{background:var(--blue);padding:40px 24px 60px;text-align:center;position:relative;}
+.auth-top::after{content:'';position:absolute;bottom:-30px;left:0;right:0;height:60px;background:#fff;border-radius:50% 50% 0 0/60px 60px 0 0;}
+.auth-logo{font-size:48px;margin-bottom:12px;}
+.auth-appname{font-size:26px;font-weight:700;color:#fff;letter-spacing:0.5px;}
+.auth-tagline{font-size:13px;color:rgba(255,255,255,0.8);margin-top:4px;}
+.auth-form{padding:40px 24px 32px;}
+.auth-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:28px;}
+.auth-tab{flex:1;padding:12px;border:none;background:none;font-family:'Roboto',sans-serif;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;}
+.auth-tab.on{color:var(--blue);border-bottom-color:var(--blue);}
+.auth-err{background:#ffebee;border-left:3px solid var(--red);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;border-radius:0 4px 4px 0;display:none;}
+.field{margin-bottom:20px;}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;}
+.field input{width:100%;padding:14px 16px;background:#f8f8f8;border:1px solid var(--border);border-radius:8px;font-family:'Roboto',sans-serif;font-size:15px;color:var(--text);outline:none;transition:all 0.2s;}
+.field input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,102,204,0.1);}
+.field input::placeholder{color:#bbb;}
+.btn-auth{width:100%;padding:15px;background:var(--blue);border:none;border-radius:8px;color:#fff;font-family:'Roboto',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:16px;}
+.btn-auth:hover{background:var(--blue2);}
+.btn-demo{width:100%;padding:14px;background:#fff;border:1.5px solid var(--blue);border-radius:8px;color:var(--blue);font-family:'Roboto',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.btn-demo:hover{background:var(--light);}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;background:var(--bg);}
+
+/* HEADER */
+.header{background:var(--blue);padding:0;position:sticky;top:0;z-index:50;}
+.header-top{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.header-brand{display:flex;align-items:center;gap:8px;}
+.header-ico{font-size:20px;}
+.header-name{font-size:17px;font-weight:700;color:#fff;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.header-av{width:32px;height:32px;background:rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+.header-search{padding:8px 16px 12px;}
+.search-box{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.2);border-radius:8px;padding:9px 14px;}
+.search-box input{flex:1;background:none;border:none;outline:none;color:#fff;font-family:'Roboto',sans-serif;font-size:14px;}
+.search-box input::placeholder{color:rgba(255,255,255,0.7);}
+.search-ico{color:rgba(255,255,255,0.8);font-size:16px;}
+
+/* MAIN TABS */
+.main-tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;}
+.main-tabs::-webkit-scrollbar{display:none;}
+.mtab{flex:1;min-width:70px;padding:12px 8px;border:none;background:none;font-family:'Roboto',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.mtab.on{color:var(--blue);border-bottom-color:var(--blue);}
+.mtab-ico{font-size:20px;}
+
+/* CONTENT */
+.content{padding:0 0 80px;}
+
+/* HOME TAB */
+.home-content{padding:16px;}
+
+/* STORAGE BANNER */
+.storage-banner{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border);}
+.sb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sb-title{font-size:13px;font-weight:500;color:var(--muted);}
+.sb-size{font-size:13px;font-weight:700;color:var(--blue);}
+.sb-bar{background:#e0e0e0;border-radius:100px;height:6px;margin-bottom:6px;}
+.sb-fill{height:100%;background:var(--blue);border-radius:100px;transition:width 0.5s;}
+.sb-info{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+
+/* UPLOAD ZONE */
+.upload-area{background:#fff;border:2px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;margin-bottom:16px;cursor:pointer;position:relative;transition:all 0.3s;}
+.upload-area:hover,.upload-area.drag{border-color:var(--blue);background:var(--light);}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.ua-ico{font-size:36px;margin-bottom:8px;}
+.ua-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.ua-sub{font-size:12px;color:var(--muted);}
+.ua-btn{display:inline-block;margin-top:12px;padding:8px 24px;background:var(--blue);border-radius:20px;color:#fff;font-size:13px;font-weight:500;}
+.uprog{margin-top:12px;display:none;}
+.uprog-bar{background:#e0e0e0;border-radius:100px;height:4px;overflow:hidden;}
+.uprog-fill{height:100%;background:var(--blue);border-radius:100px;width:0%;transition:width 0.3s;}
+.uprog-lbl{font-size:12px;color:var(--muted);margin-top:6px;text-align:left;}
+
+/* QUICK ACCESS */
+.qa-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:12px;}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.qa-item{background:#fff;border-radius:12px;padding:16px 8px;text-align:center;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;}
+.qa-item:active{transform:scale(0.95);}
+.qa-ico{font-size:28px;display:block;margin-bottom:6px;}
+.qa-lbl{font-size:11px;color:var(--muted);font-weight:500;}
+
+/* RECENT FILES */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-size:14px;font-weight:500;color:var(--text);}
+.sec-count{font-size:12px;color:var(--muted);}
+
+/* FILE ITEMS */
+.file-list{display:flex;flex-direction:column;}
+.fitem{background:#fff;border-bottom:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:default;}
+.fitem:first-child{border-radius:12px 12px 0 0;}
+.fitem:last-child{border-bottom:none;border-radius:0 0 12px 12px;}
+.fitem:only-child{border-radius:12px;}
+.fi-thumb{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.fi-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.fi-thumb.blue{background:#e3f2fd;}
+.fi-thumb.purple{background:#f3e5f5;}
+.fi-thumb.green{background:#e8f5e9;}
+.fi-thumb.orange{background:#fff3e0;}
+.fi-thumb.grey{background:#f5f5f5;}
+.fi-info{flex:1;min-width:0;}
+.fi-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.fi-meta{font-size:12px;color:var(--muted);}
+.fi-acts{display:flex;gap:4px;}
+.fi-btn{width:36px;height:36px;border-radius:50%;border:none;background:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.fi-btn:hover{background:var(--bg);}
+
+/* EMPTY */
+.empty-box{background:#fff;border-radius:12px;padding:40px 20px;text-align:center;border:1px solid var(--border);}
+.empty-ico{font-size:48px;display:block;margin-bottom:12px;opacity:0.4;}
+.empty-t{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.empty-s{font-size:13px;color:var(--muted);}
+
+/* PHOTOS TAB */
+.photos-content{padding:4px;}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.photo-cell{aspect-ratio:1;background:#e0e0e0;overflow:hidden;position:relative;}
+.photo-cell img{width:100%;height:100%;object-fit:cover;}
+.photo-cell-empty{display:flex;align-items:center;justify-content:center;font-size:24px;color:#bbb;}
+
+/* MORE TAB */
+.more-content{padding:16px;}
+.more-section{margin-bottom:20px;}
+.more-sec-title{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding:0 4px;}
+.more-item{background:#fff;border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s;}
+.more-item:first-child{border-radius:12px 12px 0 0;}
+.more-item:last-child{border-bottom:none;border-radius:0 0 12px 12px;}
+.more-item:only-child{border-radius:12px;}
+.more-item:active{background:var(--bg);}
+.more-ico{width:36px;height:36px;border-radius:8px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.more-ico.red{background:#ffebee;}
+.more-txt{flex:1;}
+.more-title{font-size:14px;font-weight:500;color:var(--text);}
+.more-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.more-arr{color:#bbb;font-size:18px;}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border:none;background:none;cursor:pointer;font-family:'Roboto',sans-serif;transition:all 0.2s;}
+.bni-ico{font-size:22px;}
+.bni-lbl{font-size:10px;font-weight:500;color:var(--muted);}
+.bni.on .bni-lbl{color:var(--blue);}
+.bni-bar{width:20px;height:2px;background:transparent;border-radius:2px;margin-top:2px;}
+.bni.on .bni-bar{background:var(--blue);}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:#323232;color:#fff;border-radius:6px;padding:10px 18px;font-size:13px;z-index:999;transition:transform 0.3s;white-space:nowrap;max-width:90%;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:#43a047;}
+.toast.err{background:#e53935;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="ld-logo">☁️</div>
+  <div class="ld-name">Cloud Vault</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-top">
+    <div class="auth-logo">☁️</div>
+    <div class="auth-appname">Cloud Vault</div>
+    <div class="auth-tagline">Your Personal Cloud Storage</div>
+  </div>
+  <div class="auth-form">
+    <div class="auth-tabs">
+      <button class="auth-tab on" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div class="auth-err" id="aerr"></div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="aemail" placeholder="name@example.com"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="apass" placeholder="Enter password"/>
+    </div>
+    <button class="btn-auth" id="abtn" onclick="doAuth()">Login</button>
+    <button class="btn-demo" onclick="doDemo()">⚡ Try Demo Account</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <span class="header-ico">☁️</span>
+        <span class="header-name">Cloud Vault</span>
+      </div>
+      <div class="header-right">
+        <div class="header-av" id="uav">G</div>
+      </div>
+    </div>
+    <div class="header-search">
+      <div class="search-box">
+        <span class="search-ico">🔍</span>
+        <input type="text" id="srch" placeholder="Search files..." oninput="renderAll()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN TABS -->
+  <div class="main-tabs">
+    <button class="mtab on" onclick="showTab('home',this)">
+      <span class="mtab-ico">🏠</span>Home
+    </button>
+    <button class="mtab" onclick="showTab('photos',this)">
+      <span class="mtab-ico">📷</span>Photos
+    </button>
+    <button class="mtab" onclick="showTab('files',this)">
+      <span class="mtab-ico">📁</span>Files
+    </button>
+    <button class="mtab" onclick="showTab('more',this)">
+      <span class="mtab-ico">☰</span>More
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- HOME TAB -->
+    <div id="tab-home" class="home-content">
+      <!-- Storage -->
+      <div class="storage-banner">
+        <div class="sb-top">
+          <span class="sb-title">Storage Used</span>
+          <span class="sb-size" id="sb-used">0 MB of 5 GB</span>
+        </div>
+        <div class="sb-bar"><div class="sb-fill" id="sbfill" style="width:0%"></div></div>
+        <div class="sb-info">
+          <span id="sb-files">0 files</span>
+          <span>Free Plan</span>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="upload-area" id="upzone">
+        <input type="file" id="finput" multiple accept="*/*" onchange="handleFiles(this.files)"/>
+        <div class="ua-ico">📤</div>
+        <div class="ua-title">Upload to Cloud Vault</div>
+        <div class="ua-sub">Photos, videos, documents & more</div>
+        <span class="ua-btn">Choose Files</span>
+        <div class="uprog" id="uprog">
+          <div class="uprog-bar"><div class="uprog-fill" id="pfill"></div></div>
+          <div class="uprog-lbl" id="plbl">Uploading...</div>
+        </div>
+      </div>
+
+      <!-- Quick Access -->
+      <div class="qa-title">Quick Access</div>
+      <div class="qa-grid">
+        <div class="qa-item" onclick="showTab('photos',null);setFilt('image')">
+          <span class="qa-ico">📷</span>
+          <span class="qa-lbl">Photos</span>
+        </div>
+        <div class="qa-item" onclick="setFilt('video');showTab('files',null)">
+          <span class="qa-ico">🎬</span>
+          <span class="qa-lbl">Videos</span>
+        </div>
+        <div class="qa-item" onclick="setFilt('doc');showTab('files',null)">
+          <span class="qa-ico">📄</span>
+          <span class="qa-lbl">Docs</span>
+        </div>
+        <div class="qa-item" onclick="setFilt('audio');showTab('files',null)">
+          <span class="qa-ico">🎵</span>
+          <span class="qa-lbl">Audio</span>
+        </div>
+      </div>
+
+      <!-- Recent -->
+      <div class="sec-head">
+        <span class="sec-title">Recent Files</span>
+        <span class="sec-count" id="rc-count">0</span>
+      </div>
+      <div class="file-list" id="recent-list">
+        <div class="empty-box">
+          <span class="empty-ico">🗂️</span>
+          <div class="empty-t">No files yet</div>
+          <div class="empty-s">Upload something to get started!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTOS TAB -->
+    <div id="tab-photos" style="display:none;">
+      <div class="photos-content">
+        <div class="photos-grid" id="photos-grid">
+          <div style="grid-column:1/-1;padding:40px;text-align:center;color:#bbb;">
+            <div style="font-size:48px;margin-bottom:8px;">📷</div>
+            <div style="font-size:14px;">No photos yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILES TAB -->
+    <div id="tab-files" style="display:none;padding:16px;">
+      <div class="sec-head">
+        <span class="sec-title">All Files</span>
+        <span class="sec-count" id="all-count">0</span>
+      </div>
+      <div class="file-list" id="all-list">
+        <div class="empty-box">
+          <span class="empty-ico">📁</span>
+          <div class="empty-t">No files yet</div>
+          <div class="empty-s">Upload from the Home tab!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MORE TAB -->
+    <div id="tab-more" style="display:none;" class="more-content">
+      <div class="more-section">
+        <div class="more-sec-title">Account</div>
+        <div>
+          <div class="more-item">
+            <div class="more-ico">👤</div>
+            <div class="more-txt">
+              <div class="more-title" id="more-name">User</div>
+              <div class="more-sub" id="more-email">loading...</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+          <div class="more-item">
+            <div class="more-ico">☁️</div>
+            <div class="more-txt">
+              <div class="more-title">Storage</div>
+              <div class="more-sub" id="more-storage">0 MB used of 5 GB</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="more-section">
+        <div class="more-sec-title">App Info</div>
+        <div>
+          <div class="more-item">
+            <div class="more-ico">🎓</div>
+            <div class="more-txt">
+              <div class="more-title">Minor Project</div>
+              <div class="more-sub">Cloud Storage Application 2025</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+          <div class="more-item">
+            <div class="more-ico">⚡</div>
+            <div class="more-txt">
+              <div class="more-title">Tech Stack</div>
+              <div class="more-sub">Firebase + Netlify + HTML/CSS/JS</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+          <div class="more-item">
+            <div class="more-ico">👨‍💻</div>
+            <div class="more-txt">
+              <div class="more-title">Developer</div>
+              <div class="more-sub">Gopal Gautam</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+          <div class="more-item">
+            <div class="more-ico">📱</div>
+            <div class="more-txt">
+              <div class="more-title">Version</div>
+              <div class="more-sub">Cloud Vault v1.0</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="more-section">
+        <div>
+          <div class="more-item" onclick="doLogout()" style="cursor:pointer;">
+            <div class="more-ico red">🚪</div>
+            <div class="more-txt">
+              <div class="more-title" style="color:#d32f2f;">Logout</div>
+              <div class="more-sub">Sign out of your account</div>
+            </div>
+            <span class="more-arr">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const cfg={apiKey:"AIzaSyB5tCxRJmFxc5qL9iqu8ehN6x9lFczStwY",authDomain:"cloud-vault-b9e4d.firebaseapp.com",projectId:"cloud-vault-b9e4d",storageBucket:"cloud-vault-b9e4d.firebasestorage.app",messagingSenderId:"280256359373",appId:"1:280256359373:web:4b5f43905089584b903284"};
+const fb=initializeApp(cfg);
+const auth=getAuth(fb);
+const db=getFirestore(fb);
+
+let user=null,files=[],filt='all',tab2='login';
+
+window.switchTab=t=>{
+  tab2=t;
+  document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('on',(i===0&&t==='login')||(i===1&&t==='signup')));
+  document.getElementById('abtn').textContent=t==='login'?'Login':'Create Account';
+  document.getElementById('aerr').style.display='none';
+};
+
+window.doAuth=async()=>{
+  const e=document.getElementById('aemail').value.trim();
+  const p=document.getElementById('apass').value;
+  const er=document.getElementById('aerr');er.style.display='none';
+  if(!e||!p){er.textContent='Please fill all fields!';er.style.display='block';return;}
+  try{if(tab2==='login')await signInWithEmailAndPassword(auth,e,p);else await createUserWithEmailAndPassword(auth,e,p);}
+  catch(x){er.textContent=x.message.replace('Firebase: ','').replace(/\(.*\)/,'');er.style.display='block';}
+};
+
+window.doDemo=async()=>{
+  const er=document.getElementById('aerr');er.style.display='none';
+  try{await signInWithEmailAndPassword(auth,'demo@cloudvault.com','demo123');}
+  catch(x){try{await createUserWithEmailAndPassword(auth,'demo@cloudvault.com','demo123');}catch(x2){er.textContent='Create your own account above!';er.style.display='block';}}
+};
+
+window.doLogout=()=>signOut(auth);
+
+onAuthStateChanged(auth,async u=>{
+  document.getElementById('loading').style.display='none';
+  if(u){
+    user=u;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app-screen').style.display='block';
+    const ini=u.email.charAt(0).toUpperCase();
+    const uname=u.email.split('@')[0];
+    document.getElementById('uav').textContent=ini;
+    document.getElementById('more-name').textContent=uname;
+    document.getElementById('more-email').textContent=u.email;
+    await loadFiles();
+  }else{
+    user=null;
+    document.getElementById('auth-screen').style.display='block';
+    document.getElementById('app-screen').style.display='none';
+  }
+});
+
+window.showTab=(t,btn)=>{
+  ['home','photos','files','more'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display=id===t?'block':'none';
+  });
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  else{
+    const idx=['home','photos','files','more'].indexOf(t);
+    document.querySelectorAll('.mtab')[idx]?.classList.add('on');
+  }
+};
+
+window.handleFiles=async fs=>{
+  if(!fs.length)return;
+  const pe=document.getElementById('uprog'),pb=document.getElementById('pfill'),pl=document.getElementById('plbl');
+  pe.style.display='block';
+  for(let i=0;i<fs.length;i++){
+    const f=fs[i];
+    pl.textContent='Uploading '+f.name+'...';pb.style.width='50%';
+    try{
+      let url=null;
+      if(f.size<400000&&f.type.startsWith('image/')){
+        url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+      }
+      await addDoc(collection(db,'files'),{uid:user.uid,name:f.name,url,type:f.type,size:f.size,createdAt:new Date().toISOString()});
+      pb.style.width='100%';
+      toast('Uploaded: '+f.name,'ok');
+    }catch(e){toast('Error: '+f.name,'err');}
+  }
+  pe.style.display='none';pb.style.width='0%';
+  document.getElementById('finput').value='';
+  await loadFiles();
+};
+
+async function loadFiles(){
+  try{
+    const q=query(collection(db,'files'),where('uid','==',user.uid));
+    const s=await getDocs(q);
+    files=[];
+    s.forEach(d=>files.push({id:d.id,...d.data()}));
+    files.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    renderAll();
+  }catch(e){console.error(e);}
+}
+
+window.renderAll=()=>{
+  const srch=document.getElementById('srch').value.toLowerCase();
+  const allVis=files.filter(f=>f.name.toLowerCase().includes(srch));
+  const imgs=files.filter(f=>f.type?.startsWith('image/'));
+
+  // Storage
+  const total=files.reduce((a,f)=>a+(f.size||0),0);
+  const pct=Math.min((total/(5*1024*1024*1024))*100,100);
+  document.getElementById('sbfill').style.width=pct+'%';
+  document.getElementById('sb-used').textContent=fmtSz(total)+' of 5 GB';
+  document.getElementById('sb-files').textContent=files.length+' files';
+  document.getElementById('more-storage').textContent=fmtSz(total)+' used of 5 GB';
+
+  // Recent (home)
+  const recent=allVis.slice(0,5);
+  document.getElementById('rc-count').textContent=allVis.length;
+  renderList('recent-list',recent);
+
+  // All files
+  document.getElementById('all-count').textContent=allVis.length;
+  renderList('all-list',allVis);
+
+  // Photos grid
+  const photosVis=imgs.filter(f=>f.name.toLowerCase().includes(srch));
+  const pg=document.getElementById('photos-grid');
+  if(!photosVis.length){
+    pg.innerHTML=`<div style="grid-column:1/-1;padding:40px;text-align:center;color:#bbb;"><div style="font-size:48px;margin-bottom:8px;">📷</div><div style="font-size:14px;">No photos yet</div></div>`;
+  }else{
+    pg.innerHTML=photosVis.map(f=>`<div class="photo-cell" data-id="${f.id}" data-url="${f.url||''}"><img src="${f.url}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=photo-cell-empty>🖼️</div>'"/></div>`).join('');
+  }
+};
+
+function renderList(id,list){
+  const g=document.getElementById(id);
+  if(!list.length){
+    g.innerHTML=`<div class="empty-box"><span class="empty-ico">📁</span><div class="empty-t">No files here</div><div class="empty-s">Upload from the Home tab!</div></div>`;
+    return;
+  }
+  g.innerHTML=list.map(f=>{
+    const isImg=f.type?.startsWith('image/');
+    const isVid=f.type?.startsWith('video/');
+    const isAud=f.type?.startsWith('audio/');
+    let cls='grey',ico='📄';
+    if(isImg){cls='blue';ico='🖼️';}
+    else if(isVid){cls='purple';ico='🎬';}
+    else if(isAud){cls='green';ico='🎵';}
+    else if(f.type?.includes('pdf')){cls='orange';ico='📕';}
+    const thumb=isImg&&f.url?`<img src="${f.url}" loading="lazy"/>`:`<span>${ico}</span>`;
+    return `<div class="fitem" data-id="${f.id}" data-url="${f.url||''}">
+      <div class="fi-thumb ${cls}">${thumb}</div>
+      <div class="fi-info">
+        <div class="fi-name">${f.name}</div>
+        <div class="fi-meta">${fmtSz(f.size)} • ${ago(f.createdAt)}</div>
+      </div>
+      <div class="fi-acts">
+        <button class="fi-btn" onclick="shareF(this)" title="Share">🔗</button>
+        <button class="fi-btn" onclick="delF(this)" title="Delete">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.setFilt=f=>filt=f;
+
+window.shareF=btn=>{
+  const card=btn.closest('.fitem');
+  const url=card.dataset.url;
+  const name=card.querySelector('.fi-name').textContent;
+  if(!url){navigator.clipboard?.writeText(name);toast('Name copied!','ok');return;}
+  if(navigator.share)navigator.share({title:name,url});
+  else{navigator.clipboard?.writeText(url);toast('Link copied!','ok');}
+};
+
+window.delF=async btn=>{
+  const card=btn.closest('.fitem');
+  const id=card.dataset.id;
+  try{
+    await deleteDoc(doc(db,'files',id));
+    files=files.filter(f=>f.id!==id);
+    renderAll();
+    toast('File deleted','ok');
+  }catch(e){toast('Error deleting','err');}
+};
+
+function fmtSz(b){if(!b||b===0)return '0 B';if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(1)+'MB';}
+function ago(iso){if(!iso)return '';const d=Date.now()-new Date(iso).getTime();const m=Math.floor(d/60000);if(m<1)return 'Just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
+
+const zone=document.getElementById('upzone');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+
+function toast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.className='toast '+type,3000);}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('auth-screen').style.display!=='none')doAuth();});
+</script>
+</body>
+</html>
